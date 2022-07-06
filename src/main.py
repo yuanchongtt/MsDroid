@@ -24,7 +24,7 @@ def generate_behavior_subgraph(apk_base, db_name, output_dir, deepth, label, hop
     <output_dir>/<db_name>/decompile/<apk_name>/call.gml
     <output_dir>/<db_name>/result/<permission | opcode | tpl>/<apk_name>.csv
     '''
-    call_graphs = generate_feature(apk_base, db_name, output_dir, deepth)   # `.gml`
+    call_graphs = generate_feature(apk_base, db_name, output_dir, deepth)   # `.gml`, 返回值为gml路径的列表
     call_graphs.sort()
     print("call graph", call_graphs)
     
