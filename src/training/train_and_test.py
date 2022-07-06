@@ -11,9 +11,13 @@
 '''
 
 # here put the import lib
+import ast
+
 import torch
 import random
+from torch_geometric.data import Data
 from torch_geometric.data import DataLoader
+from torch.utils.data import Dataset
 from tensorboardX import SummaryWriter
 from datetime import datetime
 import os
@@ -52,7 +56,7 @@ class GraphDroid():
 
         if num_epoch:
             train_loader = self.__torch_loader(exp.exp_train)
-            test_loader = self.__torch_loader(exp.exp_test)
+            test_loader = self.__torch_loader(exp.exp_test, shuffle=False)
             global_pool = self.model_config['global_pool']
             dimension = self.model_config['dimension']
             lossfunc = self.model_config['lossfunc']
@@ -163,7 +167,7 @@ class GraphDroid():
         logger.info('Splitting train test set.')
         for d in self.train_dbs:
             logger.debug(d)
-            datas = get_dataset([d], self.hop, self.tpl, self.norm_opcode, self.mask, shuffle=True)
+            datas = get_dataset([d], self.hop, self.tpl, self.norm_opcode, self.mask, shuffle=False)
             data_size = len(datas)
             logger.info(f'{d}: {data_size}')
             logger.debug(f'mask: {self.mask}, e.g., {datas[0].data}')
@@ -172,13 +176,15 @@ class GraphDroid():
             if testonly: # `TestOnly` Dataset (to avoid ValueError since only one apk exists)
                 train  += datas[int(data_size * train_rate):];continue 
             train += datas[:int(data_size * train_rate)] 
+
+        
         torch.save(train, exp.exp_train)
         torch.save(test, exp.exp_test)
 
     def __torch_loader(self, data_path, shuffle=True):
         batch_size = self.model_config['batch_size']
         data = torch.load(data_path)
-        loader = DataLoader(data, batch_size=batch_size, shuffle=True)
+        loader = DataLoader(data, batch_size=batch_size, shuffle=shuffle)
         return loader
 
     def __get_basic_train_config(self):
