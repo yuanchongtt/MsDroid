@@ -172,6 +172,7 @@ def my_train(loader, test_loader, writer, model_dict, dev=None, lossfunc=0, batc
     # build model
     num_classes = 2
     num_node_features = loader.dataset[0].data[0].x.shape[1]
+    model_logger.info(f"num_nod_features: {num_node_features}")
     model = GNNStack(num_node_features, dimension, num_classes, conv_func=conv_func, global_pool=global_pool, train_eps=train_eps, layer_norm=layer_norm).to(dev)
 
     dict_name = model_dict.split('/')[-1]

@@ -77,8 +77,8 @@ class Experiment():
                 makedirs(self.protest_path)
         exp_data = f'{self.exp_base}/{self.exp_id}/TrainTest'
         makedirs(exp_data)
-        self.exp_train = f'{exp_data}/train.pt'
-        self.exp_test = f'{exp_data}/test.pt'
+        self.exp_train = f'{exp_data}/train.csv'
+        self.exp_test = f'{exp_data}/test.csv'
         self.log_path = f'{self.exp_base}/{self.exp_id}/exp_log.log'
 
     def __epoch_from_log(self):

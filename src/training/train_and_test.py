@@ -36,6 +36,22 @@ exp_base = './training/Experiments'
 graph_base = f'./training/Graphs'
 
 
+class MyGraphDataset(Dataset):
+    def __init__(self, data_csv):
+        print(f"MyGraphDataset data_csv: {data_csv}")
+        self.data = pd.read_csv(data_csv)
+    
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        data_list = []
+        apk_subgraphs = self.data.loc[index, "path_list"]
+        for item in ast.literal_eval(apk_subgraphs):
+            data_list.append(torch.load(item))
+
+        return Data(data=data_list)
+
 class GraphDroid():
     def __init__(self, hop, tpl, train_dbs, norm_opcode=False, mask=-1, model_config=None, exp_base=exp_base, graph_base=graph_base, logger=logger):
         self.hop = hop
@@ -167,23 +183,35 @@ class GraphDroid():
         logger.info('Splitting train test set.')
         for d in self.train_dbs:
             logger.debug(d)
-            datas = get_dataset([d], self.hop, self.tpl, self.norm_opcode, self.mask, shuffle=False)
+            datas = get_dataset([d], self.hop, self.tpl, self.norm_opcode, self.mask, shuffle=True)
             data_size = len(datas)
             logger.info(f'{d}: {data_size}')
-            logger.debug(f'mask: {self.mask}, e.g., {datas[0].data}')
+            # logger.debug(f'mask: {self.mask}, e.g., {datas[0].data}')
             train_rate = self.model_config['train_rate'] 
             test += datas[int(data_size * train_rate):]
             if testonly: # `TestOnly` Dataset (to avoid ValueError since only one apk exists)
                 train  += datas[int(data_size * train_rate):];continue 
             train += datas[:int(data_size * train_rate)] 
-
+        with open(exp.exp_train, "w") as f:
+            f.write("path_list" + "\n")
+            for item in train:
+                # if item != "[]":
+                f.write('"' + str(item) + '"' + "\n")
         
-        torch.save(train, exp.exp_train)
-        torch.save(test, exp.exp_test)
+        with open(exp.exp_test, "w") as f:
+            f.write("path_list" + "\n")
+            for item in test:
+                # if item != "[]":
+                f.write('"' + str(item) + '"' + "\n")
+
+        # torch.save(train, exp.exp_train)
+        # torch.save(test, exp.exp_test)
 
     def __torch_loader(self, data_path, shuffle=True):
         batch_size = self.model_config['batch_size']
-        data = torch.load(data_path)
+        data = MyGraphDataset(data_csv=data_path)
+        print(f"{data_path}: {len(data)}")
+        # data = torch.load(data_path)
         loader = DataLoader(data, batch_size=batch_size, shuffle=shuffle)
         return loader
 

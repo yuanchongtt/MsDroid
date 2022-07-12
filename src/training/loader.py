@@ -94,7 +94,11 @@ class GraphDroidDataset():
 
     def get_dataset(self, norm_opcode=False, mask=-1):
         if (not norm_opcode) and (mask == -1):
-            return torch.load(osp.join(self.data_base, 'dataset.pt'))
+            csv_path = osp.join(self.data_base, 'dataset.csv')
+            df = pd.read_csv(csv_path)
+            df = df[df.path_list != "[]"]
+            return df.path_list.tolist()
+            # return torch.load(osp.join(self.data_base, 'dataset.pt'))
         if norm_opcode:
             dataset = self.__norm_dataset_opcode()
         if mask != -1:
