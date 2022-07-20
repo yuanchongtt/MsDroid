@@ -99,11 +99,11 @@ class GraphDroid():
                 os.remove(model_path)
                 continue
             try:
-                result = self.__get_scores(model, f'{exp.score_path}/{tag}.csv', data_loader=test_loader)
+                result = self.__get_scores(model, f'{exp.score_path}/{tag}.csv', dev=dev, data_loader=test_loader)
             except UnboundLocalError:
                 print(exp.exp_test)
                 test_loader = self.__torch_loader(exp.exp_test)
-                result = self.__get_scores(model, f'{exp.score_path}/{tag}.csv', data_loader=test_loader)
+                result = self.__get_scores(model, f'{exp.score_path}/{tag}.csv', dev=dev, data_loader=test_loader)
             try:
                 performances.append(tuple([float(i) for i in tag.split('_')]))
             except ValueError:
@@ -228,7 +228,7 @@ class GraphDroid():
         configs.loc[exp_index, col_indexer] = str(value)
         configs.to_csv(report, index=False)
 
-    def __get_scores(self, model, path, dbs=None, data_loader=None):
+    def __get_scores(self, model, path, dev=None, dbs=None, data_loader=None):
         result = pd.DataFrame()
         if data_loader is None:
             scores = []
@@ -245,7 +245,7 @@ class GraphDroid():
                 dbname += [d for _ in range(len(label))]
             result['dataset'] = dbname
         else:
-            scores, labels, pretag = my_test(data_loader, model, curve=True)
+            scores, labels, pretag = my_test(data_loader, model, dev=dev, curve=True)
         result['score'] = scores
         result['label'] = labels
         result['prediction'] = pretag
